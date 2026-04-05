@@ -1,0 +1,4 @@
+﻿thisRow.t,notes,phase,trial_num,center_ori,surround_ori,surround_present,cs_type,reinforced,left_center_contrast,right_center_contrast,left_surround_contrast,right_surround_contrast,trial_start_frame,trial_end_frame,refresh_hz,subject,session,
+,,habituation,1,75,None,0,none,0,0.5,0.5,1.0,1.0,0,959,120.0222280064341,jena,001,
+,,habituation,2,315,None,0,none,0,0.5,0.5,1.0,1.0,960,1919,,jena,001,
+,,habituation,3,315,45,1,CS+,0,0.5,0.5,1.0,1.0,1920,2879,,jena,001,
