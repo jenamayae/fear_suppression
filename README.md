@@ -27,8 +27,6 @@ the following dimensions to be explicitly varied and evaluated:
 ## Task List:
 - [x] repo set up and sharing
 (upload to github; share with ryan and martin)
-- [ ] code refactor pass
-(improve structure, modularity, and parameter control for onsite iteration)
 - [ ] stimulus verification
 (frame-by-frame validation of rendering, phase relationships, and timing)
 - [ ] temporal and trial design

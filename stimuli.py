@@ -21,31 +21,29 @@ from main import (
 bg_color = (0, 0, 0)
 units = "deg"
 
-
-# flicker configuration
-# binary_counterphase: phase reversal only, constant contrast
-# on_off_flicker: contrast gating on/off, phase fixed
-
-
-class ModulationMode(Enum):
-    binary_counterphase = "binary_counterphase"
-    on_off_flicker = "on_off_flicker"
-
-
+# stim flicker frequency
 center_flicker_hz = 3
 surround_flicker_hz = 3.75
+
+class ModulationMode(Enum):
+    binary_counterphase = "binary_counterphase" # phase reversal 
+    on_off_flicker = "on_off_flicker" # contrast gating on/off
 
 modulation_mode = ModulationMode.on_off_flicker # default setting
 
 offset_deg_by_mode = {
     ModulationMode.binary_counterphase: 90,
-    ModulationMode.on_off_flicker: 90,
+    ModulationMode.on_off_flicker: 180,
 }
 
-# stim location polar coordinates (r, theta)
+# stim location in polar coordinates (r, theta)
 ecc = 5.0
 upper_deg = 20.0
 lower_deg = 45.0
+
+# convert to cartesian coordinates for PsychoPy
+ux, uy = polar_to_cartesian(ecc, upper_deg)
+lx, ly = polar_to_cartesian(ecc, lower_deg)
 
 def polar_to_cartesian(radius, angle_deg):
     angle_rad = math.radians(angle_deg)
@@ -53,16 +51,10 @@ def polar_to_cartesian(radius, angle_deg):
     y = radius * math.sin(angle_rad)
     return x, y
 
-
-# convert to cartesian coordinates for PsychoPy
-ux, uy = polar_to_cartesian(ecc, upper_deg)
-lx, ly = polar_to_cartesian(ecc, lower_deg)
-
 center_positions = {
     "left_upper": (-ux, uy),
     "right_upper": (ux, uy),
-    # lower stimuli are below fixation, so the y component is negated here
-    "left_lower": (-lx, -ly),
+    "left_lower": (-lx, -ly), # negated y because lower stimuli below fixation
     "right_lower": (lx, -ly),
 }
 
