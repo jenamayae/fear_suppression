@@ -1,6 +1,6 @@
 # Preconditioning Calibration Phase
 ## Purpose: 
-Systematically evaluate stimulus parameters to identify configurations that produce stable, robust, and interpretable ssvep readouts of surround suppression
+systematically evaluate stimulus parameters to identify configurations that produce stable, robust, and interpretable ssvep readouts of surround suppression
 
 ## Parameter Space:
 the following dimensions to be explicitly varied and evaluated:
@@ -27,18 +27,18 @@ the following dimensions to be explicitly varied and evaluated:
 ## Task List:
 - [x] repo set up and sharing
 (upload to github; share with ryan and martin)
-- [] code refactor pass
+- [ ] code refactor pass
 (improve structure, modularity, and parameter control for onsite iteration)
-- [] stimulus verification
+- [ ] stimulus verification
 (frame-by-frame validation of rendering, phase relationships, and timing)
-- [] temporal and trial design
+- [ ] temporal and trial design
 (finalize epoch length, trial duration, iti, and event triggers)
-- [] analysis specification
+- [ ] analysis specification
 (define analysis targets; create local agents.md for pipeline behavior)
-- [] analysis pipeline implementation
+- [ ] analysis pipeline implementation
 (fft extraction, snr calculation, im identification)
-- [] pipeline validation
+- [ ] pipeline validation
 (synthetic/known-answer datasets; confirm recovery of injected signals)
-- [] empirical validation
+- [ ] empirical validation
 (test pipeline and stimuli with pilot eeg recordings)
 
