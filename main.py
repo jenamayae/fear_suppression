@@ -1,6 +1,7 @@
 from pathlib import Path
 from psychopy import core, data, event, gui, visual
 
+
 from stimuli import (
     make_window,
     make_stimuli,

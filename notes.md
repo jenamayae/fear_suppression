@@ -1,5 +1,5 @@
 # preconditioning calibration phase 
-optimize and validate stimuli configurations that yield stable, robust, and interpretable ssvep readouts of surround suppression
+    optimize and validate stimuli configurations that yield stable, robust, and interpretable ssvep readouts of surround suppression.
 
 ## considerations:
     summation strategy (upper/lower phase opposition; stimuli sizes and retinal location)
