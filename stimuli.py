@@ -1,6 +1,17 @@
 import math
 from enum import Enum
 from psychopy import visual, monitors
+from psychopy.visual.grating import GratingStim
+
+
+from main import (
+    monitor_name,
+    monitor_pixels,
+    default_refresh_hz,
+    monitor_width_cm,
+    viewing_distance_cm,
+    fullscreen
+    )
 
 # ----------------------------
 # stimulus configuration
@@ -9,13 +20,6 @@ from psychopy import visual, monitors
 bg_color = (0, 0, 0)
 units = "deg"
 
-# monitor settings; spatial calibration
-monitor_name = "asus_oled"
-monitor_pixels = [1920, 1080]
-default_refresh_hz = 120
-monitor_width_cm = 35
-viewing_distance_cm = 55
-fullscreen = True
 
 # flicker configuration
 # binary_counterphase: phase reversal only, constant contrast
@@ -29,7 +33,9 @@ class ModulationMode(Enum):
 
 center_flicker_hz = 3
 surround_flicker_hz = 3.75
-modulation_mode = ModulationMode.on_off_flicker
+
+modulation_mode = ModulationMode.on_off_flicker # default setting
+
 offset_deg_by_mode = {
     ModulationMode.binary_counterphase: 90,
     ModulationMode.on_off_flicker: 90,
@@ -121,7 +127,7 @@ def make_stimuli(win):
     surround_holes = {}
 
     for name, pos in center_positions.items():
-        centers[name] = visual.GratingStim(
+        centers[name] = GratingStim(
             win=win,
             tex="sin",
             mask=center_mask,
@@ -135,7 +141,7 @@ def make_stimuli(win):
             autoLog=False,
         )
 
-        surrounds[name] = visual.GratingStim(
+        surrounds[name] = GratingStim(
             win=win,
             tex="sin",
             mask=surround_mask,
@@ -149,7 +155,7 @@ def make_stimuli(win):
             autoLog=False,
         )
 
-        surround_holes[name] = visual.GratingStim(
+        surround_holes[name] = GratingStim(
             win=win,
             tex=None,
             color=bg_color,

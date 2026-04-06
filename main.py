@@ -19,11 +19,18 @@ from hardware import (
     maybe_send_frame_marker,
 )
 
-
-
 # ----------------------------
 # main experiment configuration
 # ----------------------------
+
+# monitor settings; spatial calibration
+monitor_name = "asus_oled"
+monitor_pixels = [1920, 1080]
+default_refresh_hz = 120
+monitor_width_cm = 35
+viewing_distance_cm = 55
+fullscreen = True
+
 
 trial_duration = 8
 iti_duration = 1
@@ -120,6 +127,9 @@ def show_message(win, text):
 
     while True:
         keys = event.waitKeys(keyList=["space", "escape"])
+        if keys is None:
+            continue
+
         if "escape" in keys:
             win.close()
             core.quit()
