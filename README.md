@@ -11,7 +11,13 @@ Conditions:
 * upper/lower counterphase: [True, False] 
 * modulation mode: [phase reversal, on/off flicker]
 * 1 * 2 * 2 * 2 = 12 conditions
-    
+
+Trials:
+* beginning fixation: 5 s
+* trial duration: 8 s
+* inter trial interval: 2 s
+* trials per condition: 5
+
 Results:
 * rms amplitude at input frequency as a function of condition comparing: 
 * upper/lower counterphase vs none 
