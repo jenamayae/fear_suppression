@@ -7,10 +7,10 @@ Questions:
 
 Conditions: 
 * center orientations: [45]
-* surround orientations: [45, 315]
+* surround orientations: [None, 45, 315]
 * upper/lower counterphase: [True, False] 
 * modulation mode: [phase reversal, on/off flicker]
-* 1 * 2 * 2 * 2 = 8 conditions
+* 1 * 2 * 2 * 2 = 12 conditions
     
 Results:
 * rms amplitude at input frequency as a function of condition comparing: 
