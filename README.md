@@ -1,42 +1,20 @@
 # Preconditioning Calibration Phase
-## Purpose: 
-systematically evaluate stimulus parameters to identify configurations that produce stable, robust, and interpretable ssvep readouts of surround suppression
 
-## Parameter Space:
-the following dimensions to be explicitly varied and evaluated:
-* summation strategy: upper/lower phase opposition; spatial arrangement; retinal location
-* modulation mode: binary_counterphase vs on_off_flicker; interaction with summation strategy and im components
-* orientation: surround suppression tuning properties; alignment with fear conditioning paradigm and difference-of-gaussians model 
-* contrast: fixed vs task-based; interaction with suppression strength and response amplitude
-* trial structure: timing, iti, and compatibility with downstream fear conditioning measures)
-* flicker frequency: 
+Questions:
+1. Does upper/lower counterphase strategy boost signal condition?
+2. Can we measure surround suppression with our stimuli?
+3. What is the effect of flicker modulation?
 
-### frequency constraints: 
-* center and surround frequencies must be integer divisors of refresh_rate_hz
-* frequencies must be separable at the level of fundamentals and im components
-* im terms (nf1 ± mf2) must fall into resolvable frequency bins given epoch duration
-* discrete bins: epoch length selected such that f × T yields integer cycle counts 
-
-## Outputs:
-* validated stimulus set with high ssvep snr
-* reliable extraction of linear (fundamental) and nonlinear (im) signals
-* validated temporal design compatible with other outcome measures
-* predefined analysis targets for the fear conditioning phase
-* finalized subset of stimulus conditions to carry forward into conditioning
-
-## Task List:
-- [x] repo set up and sharing
-(upload to github; share with ryan and martin)
-- [ ] stimulus verification
-(frame-by-frame validation of rendering, phase relationships, and timing)
-- [ ] temporal and trial design
-(finalize epoch length, trial duration, iti, and event triggers)
-- [ ] analysis specification
-(define analysis targets; create local agents.md for pipeline behavior)
-- [ ] analysis pipeline implementation
-(fft extraction, snr calculation, im identification)
-- [ ] pipeline validation
-(synthetic/known-answer datasets; confirm recovery of injected signals)
-- [ ] empirical validation
-(test pipeline and stimuli with pilot eeg recordings)
-
+Conditions: 
+    center orientations: [45]
+    surround orientations: [45, 315]
+    upper/lower counterphase: [True, False] 
+    modulation mode: [phase reversal, on/off flicker]
+    1 * 2 * 2 * 2 = 8 conditions
+    
+Results:
+    rms amplitude at input frequency as a function of condition comparing: 
+    summation strategy vs none 
+    orthogonal vs colinear
+    counterphase, on/off 
+    

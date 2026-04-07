@@ -42,8 +42,8 @@ surround_hole_mask = "raisedCos"
 surround_hole_mask_params = {"fringeWidth": 0.15}
 
 # contrasts
-left_center_contrast = 0.5
-right_center_contrast = 0.5
+left_center_contrast = 0.75
+right_center_contrast = 0.75
 left_surround_contrast = 1.0
 right_surround_contrast = 1.0
 
