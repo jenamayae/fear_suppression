@@ -1,17 +1,22 @@
 from psychopy import core, event, visual
 
-from stimuli import (
-    make_window,
-    make_stimuli,
-    draw_flicker_frame,
-    center_oris,
-    surround_oris,
+from config import (
+    monitor_name,
+    monitor_width_cm,
+    viewing_distance_cm,
     center_flicker_hz,
     surround_flicker_hz,
     left_center_contrast,
     right_center_contrast,
     left_surround_contrast,
     right_surround_contrast,
+)
+from stimuli import (
+    make_window,
+    make_stimuli,
+    draw_flicker_frame,
+    center_oris,
+    surround_oris,
     ModulationMode,
 )
 
@@ -24,7 +29,10 @@ fallback_refresh_hz = 60.0
 forced_refresh_hz = 120
 use_forced_refresh = False
 
-modulation_modes = ["binary_counterphase", "on_off_flicker"]
+modulation_modes = [
+    ModulationMode.binary_counterphase,
+    ModulationMode.on_off_flicker,
+]
 
 # one full cycle = ( refresh_hz / flicker_hz ) * 2
 
@@ -50,7 +58,7 @@ def make_overlay_text(state, refresh_hz, measured_refresh_hz):
     return (
         f"frame={state['frame_num']}   t={t_sec:.4f}s   "
         f"play={'ON' if state['playing'] else 'OFF'}\n"
-        f"mode={state['modulation_mode']}   "
+        f"mode={state['modulation_mode'].value}   "
         f"refresh_hz={refresh_hz:.3f}   measured_hz={measured_refresh_hz:.3f}\n"
         f"center_hz={center_flicker_hz:.2f}   surround_hz={surround_flicker_hz:.2f}\n"
         f"center_ori={state['center_ori']}   surround_ori={surround_label}\n"
@@ -60,7 +68,13 @@ def make_overlay_text(state, refresh_hz, measured_refresh_hz):
 
 
 def main():
-    win = make_window(size=window_size, fullscr=False)
+    win = make_window(
+        size=window_size,
+        fullscr=False,
+        monitor_name=monitor_name,
+        monitor_width_cm=monitor_width_cm,
+        viewing_distance_cm=viewing_distance_cm,
+    )
     stims = make_stimuli(win)
 
     measured_refresh_hz = get_refresh_hz(win)
@@ -136,7 +150,7 @@ def main():
             right_surround_contrast=right_surround_contrast,
             center_flicker_hz=center_flicker_hz,
             surround_flicker_hz=surround_flicker_hz,
-            modulation_mode=ModulationMode(state["modulation_mode"]),
+            modulation_mode=state["modulation_mode"],
         )
 
         if state["show_overlay"]:

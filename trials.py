@@ -1,5 +1,5 @@
 import random
-from stimuli import (
+from config import (
     center_oris,
     surround_oris,
     left_center_contrast,

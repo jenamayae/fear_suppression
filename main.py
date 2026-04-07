@@ -1,20 +1,40 @@
+import logging
 from pathlib import Path
 from psychopy import core, data, event, gui, visual
 
+from config import (
+    monitor_name,
+    monitor_pixels,
+    default_refresh_hz,
+    monitor_width_cm,
+    viewing_distance_cm,
+    fullscreen,
+    trial_duration,
+    iti_duration,
+    fallback_refresh_hz,
+    use_labjack,
+    require_triggers,
+    center_flicker_hz,
+    surround_flicker_hz,
+    trigger_pulse_width_s,
+    trigger_min_gap_s,
+    stimulus_onset_code,
+    stimulus_offset_code,
+    frame_marker_code,
+    frame_marker_interval,
+)
 
 from stimuli import (
     make_window,
     make_stimuli,
     draw_flicker_frame,
-    center_flicker_hz,
-    surround_flicker_hz,
     modulation_mode
 )
 from trials import generate_habituation_trials, generate_acquisition_trials
 
 from hardware import (
-    open_labjack,
-    close_labjack,
+    LabjackFio8BitTrigger,
+    log_trigger_settings,
     send_stimulus_onset,
     send_stimulus_offset,
     maybe_send_frame_marker,
@@ -23,20 +43,6 @@ from hardware import (
 # ----------------------------
 # main experiment configuration
 # ----------------------------
-
-# monitor settings; spatial calibration
-monitor_name = "asus_oled"
-monitor_pixels = [1920, 1080]
-default_refresh_hz = 120
-monitor_width_cm = 35
-viewing_distance_cm = 55
-fullscreen = True
-
-
-trial_duration = 8
-iti_duration = 1
-fallback_refresh_hz = 60.0
-
 
 def get_refresh_hz(win, fallback_hz=fallback_refresh_hz):
     hz = win.getActualFrameRate(
@@ -49,10 +55,22 @@ def get_refresh_hz(win, fallback_hz=fallback_refresh_hz):
 
 
 def main():
-    exp_info = {"subject": "", "session": "001"}
+   
+    exp_info: dict[str, object] = {"subject": "", "session": "001"}
 
     if not gui.DlgFromDict(exp_info, title="Fear Surround Suppression").OK:
         core.quit()
+
+    exp_info.update(
+        {
+            "trigger_pulse_width_s": trigger_pulse_width_s,
+            "trigger_min_gap_s": trigger_min_gap_s,
+            "stimulus_onset_code": stimulus_onset_code,
+            "stimulus_offset_code": stimulus_offset_code,
+            "frame_marker_code": frame_marker_code,
+            "frame_marker_interval": frame_marker_interval,
+        }
+    )
 
     Path("data").mkdir(exist_ok=True)
     filename = Path("data") / f"{exp_info['subject']}_{exp_info['session']}"
@@ -65,18 +83,31 @@ def main():
         savePickle=False,
     )
 
-    win = make_window()
+    win = make_window(
+        size=monitor_pixels,
+        fullscr=fullscreen,
+        monitor_name=monitor_name,
+        monitor_width_cm=monitor_width_cm,
+        viewing_distance_cm=viewing_distance_cm,
+    )
     stims = make_stimuli(win)
     refresh_hz = get_refresh_hz(win)
     global_frame_num = 0
 
-    use_labjack = True
-    ljm = None
-    lj_handle = None
+    trigger = None
 
     try:
         if use_labjack:
-            ljm, lj_handle = open_labjack()
+            try:
+                trigger = LabjackFio8BitTrigger()
+                trigger.open()
+                log_trigger_settings()
+            except Exception as exc:
+                if require_triggers:
+                    win.close()
+                    raise RuntimeError(f"LabJack trigger startup failed: {exc}") from exc
+                logging.warning("LabJack trigger unavailable; continuing without triggers: %s", exc)
+                print(f"WARNING: LabJack trigger unavailable; continuing without triggers: {exc}")
 
         habituation_trials = generate_habituation_trials()
         acquisition_trials = generate_acquisition_trials()
@@ -91,8 +122,7 @@ def main():
             refresh_hz=refresh_hz,
             global_frame_num=global_frame_num,
             modulation_mode=modulation_mode,
-            ljm=ljm,
-            lj_handle=lj_handle,
+            trigger=trigger,
         )
 
         show_message(win, "Press SPACE to begin Phase II.\nPress ESC to quit.")
@@ -105,15 +135,14 @@ def main():
             refresh_hz=refresh_hz,
             global_frame_num=global_frame_num,
             modulation_mode=modulation_mode,
-            ljm=ljm,
-            lj_handle=lj_handle,
+            trigger=trigger,
         )
 
         show_message(win, "End of experiment. Thank you!\nPress SPACE to exit.")
 
     finally:
-        if ljm is not None and lj_handle is not None:
-            close_labjack(ljm, lj_handle)
+        if trigger is not None:
+            trigger.close()
 
     exp.saveAsWideText(str(filename) + ".csv")
     win.close()
@@ -138,12 +167,12 @@ def show_message(win, text):
             return
 
 
-def run_trial(win, stims, trial, trial_duration, refresh_hz, global_frame_num, modulation_mode, ljm=None, lj_handle=None):
+def run_trial(win, stims, trial, trial_duration, refresh_hz, global_frame_num, modulation_mode, trigger=None):
     trial_start_frame = global_frame_num
     n_frames = round(trial_duration * refresh_hz)
 
-    if ljm is not None and lj_handle is not None:
-        send_stimulus_onset(ljm, lj_handle)
+    if trigger is not None:
+        send_stimulus_onset(trigger)
 
     for _ in range(n_frames):
         draw_flicker_frame(
@@ -164,14 +193,16 @@ def run_trial(win, stims, trial, trial_duration, refresh_hz, global_frame_num, m
         win.flip()
         global_frame_num += 1
 
-        if ljm is not None and lj_handle is not None:
-            maybe_send_frame_marker(ljm, lj_handle, global_frame_num) 
+        if trigger is not None:
+            maybe_send_frame_marker(trigger, global_frame_num) 
 
         if "escape" in event.getKeys():
             win.close()
             core.quit()
 
     trial_end_frame = global_frame_num - 1
+    if trigger is not None:
+        send_stimulus_offset(trigger)
 
     return global_frame_num, trial_start_frame, trial_end_frame
 
@@ -209,7 +240,7 @@ def log_trial(exp, phase_name, trial_num, trial, trial_start_frame, trial_end_fr
     exp.nextEntry()
 
 
-def run_block(win, stims, exp, trials, phase_name, refresh_hz, global_frame_num, modulation_mode, ljm=None, lj_handle=None):
+def run_block(win, stims, exp, trials, phase_name, refresh_hz, global_frame_num, modulation_mode, trigger=None):
     for trial_num, trial in enumerate(trials, start=1):
         global_frame_num, trial_start_frame, trial_end_frame = run_trial(
             win=win,
@@ -219,8 +250,7 @@ def run_block(win, stims, exp, trials, phase_name, refresh_hz, global_frame_num,
             refresh_hz=refresh_hz,
             global_frame_num=global_frame_num,
             modulation_mode=modulation_mode,
-            ljm=ljm,
-            lj_handle=lj_handle,
+            trigger=trigger,
         )
 
         log_trial(

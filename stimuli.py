@@ -2,54 +2,60 @@ import math
 from enum import Enum
 from psychopy import visual, monitors
 from psychopy.visual.grating import GratingStim
-
-
-
-from main import (
-    monitor_name,
-    monitor_pixels,
+from config import (
+    bg_color,
+    units,
     default_refresh_hz,
-    monitor_width_cm,
-    viewing_distance_cm,
-    fullscreen
-    )
+    center_flicker_hz,
+    surround_flicker_hz,
+    modulation_mode as config_modulation_mode,
+    ecc,
+    upper_deg,
+    lower_deg,
+    center_radius,
+    center_sf,
+    center_mask,
+    center_mask_params,
+    center_oris,
+    left_center_contrast,
+    right_center_contrast,
+    center_surround_gap,
+    surround_radius,
+    surround_sf,
+    surround_mask,
+    surround_mask_params,
+    surround_oris,
+    left_surround_contrast,
+    right_surround_contrast,
+    surround_hole_radius,
+    surround_hole_mask,
+    surround_hole_mask_params,
+)
 
 # ----------------------------
 # stimulus configuration
 # ----------------------------
 
-bg_color = (0, 0, 0)
-units = "deg"
-
-# stim flicker frequency
-center_flicker_hz = 3
-surround_flicker_hz = 3.75
-
 class ModulationMode(Enum):
     binary_counterphase = "binary_counterphase" # phase reversal 
     on_off_flicker = "on_off_flicker" # contrast gating on/off
 
-modulation_mode = ModulationMode.on_off_flicker # default setting
+modulation_mode = ModulationMode(config_modulation_mode) # string to enum
 
 offset_deg_by_mode = {
     ModulationMode.binary_counterphase: 90,
     ModulationMode.on_off_flicker: 180,
 }
 
-# stim location in polar coordinates (r, theta)
-ecc = 5.0
-upper_deg = 20.0
-lower_deg = 45.0
-
-# convert to cartesian coordinates for PsychoPy
-ux, uy = polar_to_cartesian(ecc, upper_deg)
-lx, ly = polar_to_cartesian(ecc, lower_deg)
-
 def polar_to_cartesian(radius, angle_deg):
     angle_rad = math.radians(angle_deg)
     x = radius * math.cos(angle_rad)
     y = radius * math.sin(angle_rad)
     return x, y
+
+# convert to cartesian coordinates for PsychoPy
+ux, uy = polar_to_cartesian(ecc, upper_deg)
+lx, ly = polar_to_cartesian(ecc, lower_deg)
 
 center_positions = {
     "left_upper": (-ux, uy),
@@ -58,38 +64,12 @@ center_positions = {
     "right_lower": (lx, -ly),
 }
 
-# center stimuli
-center_radius = 0.75
-center_sf = 1.0
-center_mask, center_mask_params = "raisedCos", {"fringeWidth": 0.1}
-center_oris = [45, 55, 75, 315]
-
-# center contrasts by hemifield
-left_center_contrast = 0.5
-right_center_contrast = 0.5
-
-# surround stimuli
-center_surround_gap = 0.5
-surround_radius = center_radius + center_surround_gap + 1.5
-surround_sf = 1.0
-surround_mask = "raisedCos"
-surround_mask_params = {"fringeWidth": 0.1}
-surround_oris = [None, 45, 315]
-
-# surround contrasts by hemifield
-left_surround_contrast = 1.0
-right_surround_contrast = 1.0
-
-# surround inner radius mask
-surround_hole_radius = (center_radius + center_surround_gap) * 2
-surround_hole_mask = "raisedCos"
-surround_hole_mask_params = {"fringeWidth": 0.15}
-
-
 def make_window(
-    size=monitor_pixels,
-    fullscr=fullscreen,
-    monitor_name=monitor_name,
+    size,
+    fullscr,
+    monitor_name,
+    monitor_width_cm,
+    viewing_distance_cm,
 ):
     mon = monitors.Monitor(monitor_name)
     mon.setSizePix(size)
@@ -103,7 +83,6 @@ def make_window(
         units=units,
         color=bg_color,
     )
-
 
 def make_stimuli(win):
     fixation = visual.TextStim(
@@ -150,7 +129,7 @@ def make_stimuli(win):
 
         surround_holes[name] = GratingStim(
             win=win,
-            tex=None,
+            tex="",
             color=bg_color,
             mask=surround_hole_mask,
             maskParams=surround_hole_mask_params,
@@ -178,9 +157,9 @@ def set_trial_orientations(stims, center_ori, surround_ori):
 
 
 def flicker_state(frame_num, refresh_hz, flicker_hz, modulation_mode):
-    # for one frame, decide what the upper, lower stimuli should do; 
-    # depending on cyc, where we are within the repeating pattern;
-    # and offset_deg_by_mode (90 for binary, 180 for on/off)
+    """ for one frame, decide what the upper and lower stimuli should do 
+    depending on where we are within a cycle 
+    and offset deg_by_mode (90 for binary, 180 for on/off) """
 
     cyc = (frame_num * (flicker_hz / 2.0) / refresh_hz) % 1.0 
     
