@@ -1,9 +1,9 @@
 # Preconditioning Calibration Phase
 
 Questions:
-1. Does upper/lower counterphase strategy boost signal condition?
-2. Can we measure surround suppression with our stimuli?
-3. What is the effect of flicker modulation?
+1. Does upper/lower counterphase increase SSVEP response strength or SNR?
+2. Do our stimuli produce reduced tagged responses in surround-present conditions consistent with surround suppression?
+3. Is the effect of upper/lower counterphase different for phase-reversal versus on/off flicker?
 
 Conditions: 
 * center orientations: [45]
