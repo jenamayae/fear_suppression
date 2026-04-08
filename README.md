@@ -24,18 +24,18 @@ Outputs:
 * orthogonal vs colinear
 * phase reversal vs on/off 
     
-jena to do:
-double the sf
-implement 45-static condition
-change outputs in readme^
-remove intial blank fixation
-double check stimuli location, visual angle, screen size, viewing distance
-look into mean luminance; cieling contrast
-analysis.py
+TO DO:
+- double the sf
+- implement 45-static condition
+- change outputs in readme^
+- remove intial blank fixation
+- double check stimuli location, visual angle, screen size, viewing distance
+- look into mean luminance; cieling contrast
+- analysis.py
 
 consider also:
-doing double the on/off rate (center only, no surround)
-phase reversal rate at double that or half of that (center only, no surround)
-effect of upper/lower counterphase at different contrasts (one temporal frequ, center only)
-once we find maximal effect decide if center or surround is higher temporal frequ. 
+- doing double the on/off rate (center only, no surround)
+- phase reversal rate at double that or half of that (center only, no surround)
+- effect of upper/lower counterphase at different contrasts (one temporal frequ, center only)
+- once we find maximal effect decide if center or surround is higher temporal frequ. 
 
