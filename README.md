@@ -23,7 +23,9 @@ Outputs:
 * upper/lower counterphase vs none 
 * orthogonal vs colinear
 * phase reversal vs on/off 
-    
+
+---
+
 TO DO:
 - double the sf
 - implement 45-static condition
