@@ -12,9 +12,22 @@ Conditions:
 * modulation mode: [phase reversal, on/off flicker]
 * 1 * 2 * 2 * 2 = 12 conditions
 
+Trials:
+* beginning fixation: 3.0 s (remove this)
+* trial duration: 10.0 s
+* inter trial interval: 3 s
+* trials per condition: 10
+
+Outputs:
+* rms amplitude at input frequency as a function of condition comparing: 
+* upper/lower counterphase vs none 
+* orthogonal vs colinear
+* phase reversal vs on/off 
+    
 to do:
 double sf
 implement 45-static condition
+change outputs^
 
 consider:
 also do the double on/off rate
@@ -26,16 +39,3 @@ for no surround condition: temporal frequency, contrasts.
 pick one temporal frequency for contrast
 how does upper/lower affect contrasts. 
 once we find maximal effect decide if center or surround is higher. 
-
-Trials:
-* beginning fixation: 3.0 s (remove this)
-* trial duration: 10.0 s
-* inter trial interval: 3 s
-* trials per condition: 10
-
-Results:
-* rms amplitude at input frequency as a function of condition comparing: 
-* upper/lower counterphase vs none 
-* orthogonal vs colinear
-* phase reversal vs on/off 
-    
