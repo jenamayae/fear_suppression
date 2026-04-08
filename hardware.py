@@ -1,4 +1,16 @@
-"""LabJack trigger helpers for 8-bit event codes on FIO0-FIO7."""
+"""LabJack trigger helpers for 8-bit event codes on FIO0-FIO7.
+
+Notes:
+Only rising flanks are detected as triggers and as high trigger bits
+A trigger pulse should have a length of at least 2-3 times the reciprocal of the sampling rate. In between
+triggers the Low level must also be hold for 2-3 times the reciprocal of the sampling rate.
+the amplifier detects a trigger when a bit goes from low to high (no pulse to pulse) 
+
+Amplifier max sampling rate (depends on amplifier type)
+16384 Hz (16384/8192/4096/2048/1024/512 and
+16000/8000/4000/2000/1000/500 Hz)
+
+""" 
 
 from __future__ import annotations
 

@@ -1,9 +1,9 @@
-# Preconditioning Calibration Phase
+# Preconditioning Calibration Stage
 
 Questions:
 1. Does upper/lower counterphase increase SSVEP response strength or SNR?
 2. Do our stimuli produce reduced tagged responses in surround-present conditions consistent with surround suppression?
-3. Is the effect of upper/lower counterphase different for phase-reversal versus on/off flicker?
+3. Is the effect of upper/lower counterphase different for phase-reversal versus on/off flicker? 
 
 Conditions: 
 * center orientations: [45]
@@ -13,8 +13,8 @@ Conditions:
 * 1 * 2 * 2 * 2 = 12 conditions
 
 Trials:
-* beginning fixation: 5 s
-* trial duration: 8 s
+* beginning fixation: 8.0 s
+* trial duration: 8.0 s
 * inter trial interval: 2 s
 * trials per condition: 5
 

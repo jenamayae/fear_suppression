@@ -37,13 +37,13 @@ from config import (
 # ----------------------------
 
 class ModulationMode(Enum):
-    binary_counterphase = "binary_counterphase" # phase reversal 
+    phase_reversal = "phase_reversal" # 
     on_off_flicker = "on_off_flicker" # contrast gating on/off
 
 modulation_mode = ModulationMode(config_modulation_mode) # string to enum
 
 offset_deg_by_mode = {
-    ModulationMode.binary_counterphase: 90,
+    ModulationMode.phase_reversal: 90,
     ModulationMode.on_off_flicker: 180,
 }
 
@@ -167,7 +167,7 @@ def flicker_state(frame_num, refresh_hz, flicker_hz, modulation_mode):
     offset_cyc = (offset_deg % 360.0) / 360
     lower_cyc = (cyc + offset_cyc) % 1
 
-    if modulation_mode == ModulationMode.binary_counterphase:
+    if modulation_mode == ModulationMode.phase_reversal:
         upper_phase = 0.0 if cyc < 0.5 else 0.5
         lower_phase = 0.0 if lower_cyc < 0.5 else 0.5
         upper_gain, lower_gain = 1.0, 1.0

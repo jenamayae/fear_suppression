@@ -12,12 +12,12 @@ fullscreen = True
 bg_color = (0, 0, 0)
 units = "deg"
 
-# stimulus timing and flicker
+# stimulus flicker rate
 center_flicker_hz = 3
 surround_flicker_hz = 3.75
 
-# flicker type (on_off_flicker or binary_counterphase)
-modulation_mode = "on_off_flicker" # str converted to enum in stimuli.py
+# flicker type (on_off_flicker or phase_reversal)
+modulation_mode = "phase_reversal" # str converted to enum in stimuli.py
 
 # stimulus geometry
 ecc = 5.0
@@ -28,7 +28,7 @@ center_radius = 0.75
 center_sf = 1.0
 center_mask = "raisedCos"
 center_mask_params = {"fringeWidth": 0.1}
-center_oris = [45, 55, 75, 315]
+center_oris = [45]
 
 center_surround_gap = 0.5
 surround_radius = center_radius + center_surround_gap + 1.5
@@ -60,9 +60,11 @@ labjack_connection_type = "ANY"
 labjack_identifier = "ANY"
 labjack_fio_lines = [f"FIO{i}" for i in range(8)]
 labjack_fio_mask = 0xFF
+
 stimulus_onset_code = 1
 stimulus_offset_code = 2
 frame_marker_code = 3
+
 trigger_pulse_width_s = 0.005
 trigger_min_gap_s = 0.005
 frame_marker_interval = 80

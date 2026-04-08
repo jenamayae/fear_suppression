@@ -1,1 +1,0 @@
-# loads ANT Neuro .cnt EEG data, extracts event markers, 
