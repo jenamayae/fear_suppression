@@ -1,0 +1,2 @@
+﻿trial_num,upper_lower_phase_mode,modulation_mode,center_ori,surround_ori,center_contrast,surround_contrast,refresh_hz,trial_start_frame,trial_end_frame,condition_id,subject,session,run,
+1,synchronized,on_off_flicker,45,None,0.75,1.0,119.96991746078056,0,959,3,jena,001,006,

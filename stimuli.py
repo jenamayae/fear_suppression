@@ -9,6 +9,7 @@ from config import (
     center_flicker_hz,
     surround_flicker_hz,
     modulation_mode as config_modulation_mode,
+    upper_lower_phase_mode as config_upper_lower_phase_mode,
     ecc,
     upper_deg,
     lower_deg,
@@ -17,16 +18,14 @@ from config import (
     center_mask,
     center_mask_params,
     center_oris,
-    left_center_contrast,
-    right_center_contrast,
+    center_contrast,
     center_surround_gap,
     surround_radius,
     surround_sf,
     surround_mask,
     surround_mask_params,
     surround_oris,
-    left_surround_contrast,
-    right_surround_contrast,
+    surround_contrast,
     surround_hole_radius,
     surround_hole_mask,
     surround_hole_mask_params,
@@ -40,12 +39,20 @@ class ModulationMode(Enum):
     phase_reversal = "phase_reversal" # 
     on_off_flicker = "on_off_flicker" # contrast gating on/off
 
+
+class UpperLowerPhaseMode(Enum):
+    synchronized = "synchronized"
+    offset = "offset"
+
+
 modulation_mode = ModulationMode(config_modulation_mode) # string to enum
+upper_lower_phase_mode = UpperLowerPhaseMode(config_upper_lower_phase_mode)
 
 offset_deg_by_mode = {
     ModulationMode.phase_reversal: 90,
     ModulationMode.on_off_flicker: 180,
 }
+
 
 def polar_to_cartesian(radius, angle_deg):
     angle_rad = math.radians(angle_deg)
@@ -129,7 +136,7 @@ def make_stimuli(win):
 
         surround_holes[name] = GratingStim(
             win=win,
-            tex="",
+            tex=None,
             color=bg_color,
             mask=surround_hole_mask,
             maskParams=surround_hole_mask_params,
@@ -156,28 +163,45 @@ def set_trial_orientations(stims, center_ori, surround_ori):
             surround.ori = surround_ori
 
 
-def flicker_state(frame_num, refresh_hz, flicker_hz, modulation_mode):
-    """ for one frame, decide what the upper and lower stimuli should do 
-    depending on where we are within a cycle 
-    and offset deg_by_mode (90 for binary, 180 for on/off) """
+def cycle_position(frame_num, refresh_hz, flicker_hz):
+    return (frame_num * flicker_hz / refresh_hz) % 1.0
 
-    cyc = (frame_num * (flicker_hz / 2.0) / refresh_hz) % 1.0 
-    
-    offset_deg = offset_deg_by_mode[modulation_mode]
-    offset_cyc = (offset_deg % 360.0) / 360
-    lower_cyc = (cyc + offset_cyc) % 1
 
+def phase_reversal_output(cyc):
+    quarter_cycle = int((cyc % 1.0) * 4.0)
+    phase = 0.0 if quarter_cycle in (0, 2) else 0.5
+    gain = 1.0
+    return phase, gain
+
+
+def on_off_output(cyc):
+    phase = 0.0
+    gain = 1.0 if (cyc % 1.0) < 0.5 else 0.0
+    return phase, gain
+
+
+def modulation_mode_dispatcher(cyc, modulation_mode):
     if modulation_mode == ModulationMode.phase_reversal:
-        upper_phase = 0.0 if cyc < 0.5 else 0.5
-        lower_phase = 0.0 if lower_cyc < 0.5 else 0.5
-        upper_gain, lower_gain = 1.0, 1.0
- 
-    elif modulation_mode == ModulationMode.on_off_flicker:
-        upper_phase, lower_phase = 0.0, 0.0
-        upper_gain = 1.0 if cyc < 0.5 else 0.0
-        lower_gain = 1.0 if lower_cyc < 0.5 else 0.0
+        return phase_reversal_output(cyc)
+    if modulation_mode == ModulationMode.on_off_flicker:
+        return on_off_output(cyc)
+    raise ValueError(f"Unknown modulation mode: {modulation_mode}")
+
+
+def upper_lower_coordinator(frame_num, refresh_hz, flicker_hz, modulation_mode, upper_lower_phase_mode):
+    upper_cyc = cycle_position(frame_num, refresh_hz, flicker_hz)
+
+    if upper_lower_phase_mode == UpperLowerPhaseMode.synchronized:
+        lower_cyc = upper_cyc
+    elif upper_lower_phase_mode == UpperLowerPhaseMode.offset:
+        offset_deg = offset_deg_by_mode[modulation_mode]
+        offset_cyc = (offset_deg % 360.0) / 360.0
+        lower_cyc = (upper_cyc + offset_cyc) % 1.0
     else:
-        raise ValueError(f"Unknown modulation mode: {modulation_mode}")
+        raise ValueError(f"Unknown upper/lower phase mode: {upper_lower_phase_mode}")
+
+    upper_phase, upper_gain = modulation_mode_dispatcher(upper_cyc, modulation_mode)
+    lower_phase, lower_gain = modulation_mode_dispatcher(lower_cyc, modulation_mode)
 
     return upper_phase, lower_phase, upper_gain, lower_gain
 
@@ -189,27 +213,28 @@ def draw_flicker_frame(
     refresh_hz,
     center_ori,
     surround_ori,
-    left_center_contrast=left_center_contrast,
-    right_center_contrast=right_center_contrast,
-    left_surround_contrast=left_surround_contrast,
-    right_surround_contrast=right_surround_contrast,
+    center_contrast=center_contrast,
+    surround_contrast=surround_contrast,
     center_flicker_hz=center_flicker_hz,
     surround_flicker_hz=surround_flicker_hz,
     modulation_mode=modulation_mode,
+    upper_lower_phase_mode=upper_lower_phase_mode,
 ):
     set_trial_orientations(stims, center_ori, surround_ori)
 
-    center_upper_phase, center_lower_phase, center_upper_gain, center_lower_gain = flicker_state(
+    center_upper_phase, center_lower_phase, center_upper_gain, center_lower_gain = upper_lower_coordinator(
         frame_num=frame_num,
         refresh_hz=refresh_hz,
         flicker_hz=center_flicker_hz,
         modulation_mode=modulation_mode,
+        upper_lower_phase_mode=upper_lower_phase_mode,
     )
-    surround_upper_phase, surround_lower_phase, surround_upper_gain, surround_lower_gain = flicker_state(
+    surround_upper_phase, surround_lower_phase, surround_upper_gain, surround_lower_gain = upper_lower_coordinator(
         frame_num=frame_num,
         refresh_hz=refresh_hz,
         flicker_hz=surround_flicker_hz,
         modulation_mode=modulation_mode,
+        upper_lower_phase_mode=upper_lower_phase_mode,
     )
 
     stims["centers"]["left_upper"].phase = center_upper_phase
@@ -222,15 +247,15 @@ def draw_flicker_frame(
     stims["surrounds"]["left_lower"].phase = surround_lower_phase
     stims["surrounds"]["right_lower"].phase = surround_lower_phase
 
-    stims["centers"]["left_upper"].contrast = left_center_contrast * center_upper_gain
-    stims["centers"]["left_lower"].contrast = left_center_contrast * center_lower_gain
-    stims["centers"]["right_upper"].contrast = right_center_contrast * center_upper_gain
-    stims["centers"]["right_lower"].contrast = right_center_contrast * center_lower_gain
+    stims["centers"]["left_upper"].contrast = center_contrast * center_upper_gain
+    stims["centers"]["left_lower"].contrast = center_contrast * center_lower_gain
+    stims["centers"]["right_upper"].contrast = center_contrast * center_upper_gain
+    stims["centers"]["right_lower"].contrast = center_contrast * center_lower_gain
 
-    stims["surrounds"]["left_upper"].contrast = left_surround_contrast * surround_upper_gain
-    stims["surrounds"]["left_lower"].contrast = left_surround_contrast * surround_lower_gain
-    stims["surrounds"]["right_upper"].contrast = right_surround_contrast * surround_upper_gain
-    stims["surrounds"]["right_lower"].contrast = right_surround_contrast * surround_lower_gain
+    stims["surrounds"]["left_upper"].contrast = surround_contrast * surround_upper_gain
+    stims["surrounds"]["left_lower"].contrast = surround_contrast * surround_lower_gain
+    stims["surrounds"]["right_upper"].contrast = surround_contrast * surround_upper_gain
+    stims["surrounds"]["right_lower"].contrast = surround_contrast * surround_lower_gain
 
     if surround_ori is not None:
         for name in stims["surrounds"]:
@@ -249,11 +274,10 @@ def draw_trial_frame(
     t,
     center_ori,
     surround_ori,
-    left_center_contrast=left_center_contrast,
-    right_center_contrast=right_center_contrast,
-    left_surround_contrast=left_surround_contrast,
-    right_surround_contrast=right_surround_contrast,
+    center_contrast=center_contrast,
+    surround_contrast=surround_contrast,
     refresh_hz=default_refresh_hz,
+    upper_lower_phase_mode=upper_lower_phase_mode,
 ):
     frame_num = round(t * refresh_hz)
 
@@ -263,11 +287,10 @@ def draw_trial_frame(
         refresh_hz=refresh_hz,
         center_ori=center_ori,
         surround_ori=surround_ori,
-        left_center_contrast=left_center_contrast,
-        right_center_contrast=right_center_contrast,
-        left_surround_contrast=left_surround_contrast,
-        right_surround_contrast=right_surround_contrast,
+        center_contrast=center_contrast,
+        surround_contrast=surround_contrast,
         center_flicker_hz=center_flicker_hz,
         surround_flicker_hz=surround_flicker_hz,
         modulation_mode=modulation_mode,
+        upper_lower_phase_mode=upper_lower_phase_mode,
     )

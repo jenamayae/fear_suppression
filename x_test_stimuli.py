@@ -6,10 +6,8 @@ from config import (
     monitor_width_cm,
     viewing_distance_cm,
     fullscreen,
-    left_center_contrast,
-    right_center_contrast,
-    left_surround_contrast,
-    right_surround_contrast,
+    center_contrast,
+    surround_contrast,
 )
 from stimuli import (
     make_window,
@@ -42,10 +40,8 @@ while trial_clock.getTime() < trial_duration:
         t=t,
         center_ori=center_ori,
         surround_ori=surround_ori,
-        left_center_contrast=left_center_contrast,
-        right_center_contrast=right_center_contrast,
-        left_surround_contrast=left_surround_contrast,
-        right_surround_contrast=right_surround_contrast,
+        center_contrast=center_contrast,
+        surround_contrast=surround_contrast,
     )
     win.flip()
 

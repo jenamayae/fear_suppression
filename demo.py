@@ -6,10 +6,8 @@ from config import (
     viewing_distance_cm,
     center_flicker_hz,
     surround_flicker_hz,
-    left_center_contrast,
-    right_center_contrast,
-    left_surround_contrast,
-    right_surround_contrast,
+    center_contrast,
+    surround_contrast,
 )
 from stimuli import (
     make_window,
@@ -30,7 +28,7 @@ forced_refresh_hz = 120
 use_forced_refresh = False
 
 modulation_modes = [
-    ModulationMode.binary_counterphase,
+    ModulationMode.phase_reversal,
     ModulationMode.on_off_flicker,
 ]
 
@@ -144,10 +142,8 @@ def main():
             refresh_hz=refresh_hz,
             center_ori=state["center_ori"],
             surround_ori=state["surround_ori"],
-            left_center_contrast=left_center_contrast,
-            right_center_contrast=right_center_contrast,
-            left_surround_contrast=left_surround_contrast,
-            right_surround_contrast=right_surround_contrast,
+            center_contrast=center_contrast,
+            surround_contrast=surround_contrast,
             center_flicker_hz=center_flicker_hz,
             surround_flicker_hz=surround_flicker_hz,
             modulation_mode=state["modulation_mode"],

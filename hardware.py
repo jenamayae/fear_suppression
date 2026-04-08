@@ -180,6 +180,76 @@ class LabjackFio8BitTrigger:
             thread.join(timeout=timeout_s)
 
 
+class SimulatedLabjackFio8BitTrigger:
+    """Drop-in trigger object for testing without LabJack hardware."""
+
+    def __init__(
+        self,
+        pulse_width_s=trigger_pulse_width_s,
+        min_gap_s=trigger_min_gap_s,
+    ):
+        self.pulse_width_s = pulse_width_s
+        self.min_gap_s = min_gap_s
+        self.io_lock = threading.Lock()
+        self.thread_lock = threading.Lock()
+        self.threads = []
+        self.last_clear_time = None
+
+    def open(self):
+        logging.info("Simulated LabJack trigger opened")
+
+    def require_open(self):
+        return
+
+    def pulse_event(self, code: int, pulse_width_s=None, min_gap_s=None):
+        pulse_width_s = self.pulse_width_s if pulse_width_s is None else pulse_width_s
+        min_gap_s = self.min_gap_s if min_gap_s is None else min_gap_s
+
+        if not 1 <= int(code) <= 255:
+            raise ValueError(f"Trigger code must be in [1, 255], got {code}")
+
+        with self.io_lock:
+            if min_gap_s > 0 and self.last_clear_time is not None:
+                elapsed_s = time.perf_counter() - self.last_clear_time
+                remaining_s = min_gap_s - elapsed_s
+                if remaining_s > 0:
+                    time.sleep(remaining_s)
+
+            logging.info("Simulated trigger code=%s", code)
+            if pulse_width_s > 0:
+                time.sleep(pulse_width_s)
+            self.last_clear_time = time.perf_counter()
+
+    def pulse_event_async(self, code: int, pulse_width_s=None, min_gap_s=None):
+        thread = threading.Thread(
+            target=self.safe_pulse_event,
+            args=(code, pulse_width_s, min_gap_s),
+            daemon=True,
+        )
+        with self.thread_lock:
+            self.threads.append(thread)
+        thread.start()
+        return thread
+
+    def safe_pulse_event(self, code: int, pulse_width_s=None, min_gap_s=None):
+        try:
+            self.pulse_event(code=code, pulse_width_s=pulse_width_s, min_gap_s=min_gap_s)
+        except Exception as exc:
+            logging.error("Simulated trigger error for code %s: %s", code, exc)
+            print(f"WARNING: Simulated trigger error for code {code}: {exc}")
+
+    def close(self):
+        self.wait_for_threads()
+
+    def wait_for_threads(self, timeout_s: float = 0.1):
+        with self.thread_lock:
+            threads = list(self.threads)
+            self.threads = []
+
+        for thread in threads:
+            thread.join(timeout=timeout_s)
+
+
 def log_trigger_settings(
     pulse_width_s=trigger_pulse_width_s,
     min_gap_s=trigger_min_gap_s,

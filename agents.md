@@ -10,17 +10,14 @@ Local rules for the fear suppression PsychoPy experiment, LabJack trigger code, 
 
 ## Data organization
 ```
-rawdata/                        # immutable acquisition output
+data/                       
   sub-<id>/
     ses-<id>/
-      eeg/
-        *.cnt
-
-workdata/                       # all derived / working files
-  sub-<id>/
-    ses-<id>/
-      trialconditions/          # design matrix (planned trials)
-      sourcedata/               # exported / converted data (optional)
+      rawdata/
+        sub-<id>_ses-<id>_run-<id>_eeg.cnt
+      metadata/
+        session_info_run-<id>.yaml          # session metadata
+        trial_conditions_run-<id>.csv               # trial structure  
       derivatives/              # analysis outputs (fft, snr, plots)
 ```
 

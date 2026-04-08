@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-# display configuration
+# Display configuration
 monitor_name = "asus_oled"
 monitor_pixels = [1920, 1080]
 default_refresh_hz = 120
@@ -8,28 +8,30 @@ monitor_width_cm = 35
 viewing_distance_cm = 55
 fullscreen = True
 
-# general stimulus configuration
 bg_color = (0, 0, 0)
 units = "deg"
 
-# stimulus flicker rate
+# Stimulus flicker frequency
 center_flicker_hz = 3
 surround_flicker_hz = 3.75
 
-# flicker type (on_off_flicker or phase_reversal)
+# Flicker type (on_off_flicker or phase_reversal)
 modulation_mode = "phase_reversal" # str converted to enum in stimuli.py
+upper_lower_phase_mode = "offset" # str converted to enum in stimuli.py
 
-# stimulus geometry
-ecc = 5.0
+# Stimulus location
+ecc = 5.0 # polar coordinates converted to cartesion coordinates in stimuli.py
 upper_deg = 20.0
 lower_deg = 45.0
 
+# Center geometry
 center_radius = 0.75
 center_sf = 1.0
 center_mask = "raisedCos"
 center_mask_params = {"fringeWidth": 0.1}
 center_oris = [45]
 
+# Surround geometry
 center_surround_gap = 0.5
 surround_radius = center_radius + center_surround_gap + 1.5
 surround_sf = 1.0
@@ -41,26 +43,28 @@ surround_hole_radius = (center_radius + center_surround_gap) * 2
 surround_hole_mask = "raisedCos"
 surround_hole_mask_params = {"fringeWidth": 0.15}
 
-# contrasts
-left_center_contrast = 0.75
-right_center_contrast = 0.75
-left_surround_contrast = 1.0
-right_surround_contrast = 1.0
+# Contrasts
+center_contrast = 0.75
+surround_contrast = 1.0
 
-# experiment timing
+# Experiment timing
 trial_duration = 8
-iti_duration = 1
-fallback_refresh_hz = 60.0
+iti_duration = 2
+fallback_refresh_hz = 120.0
+trials_per_condition = 5
 
-# hardware
+# Hardware
 use_labjack = True
 require_triggers = True
+simulate_labjack = True
+
 labjack_device_type = "T7"
 labjack_connection_type = "ANY"
 labjack_identifier = "ANY"
 labjack_fio_lines = [f"FIO{i}" for i in range(8)]
 labjack_fio_mask = 0xFF
 
+# Event codes
 stimulus_onset_code = 1
 stimulus_offset_code = 2
 frame_marker_code = 3
