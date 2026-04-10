@@ -9,7 +9,6 @@ from config import (
 )
 from stimuli import ModulationMode, UpperLowerPhaseMode
 
-
 def make_trial(
     stage,
     condition_id,
@@ -32,7 +31,7 @@ def make_trial(
     }
 
 
-def generate_calibration_trials(shuffle=True):
+def generate_trials(shuffle=True):
     trials = []
     condition_id = 0
 

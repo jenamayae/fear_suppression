@@ -12,7 +12,7 @@ Local rules for the fear suppression PsychoPy experiment, LabJack trigger code, 
 ```
 data/                       
   sub-<id>/
-    ses-<id>/
+    ses-<id>/ 
       rawdata/
         sub-<id>_ses-<id>_run-<id>_eeg.cnt
       metadata/

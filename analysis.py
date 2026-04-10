@@ -8,11 +8,10 @@ structure:
 
   -pick oz for channel 
 
-  -rms power at tagged frequency for topography: one for center one for surround. 
 
-  
+  -plot rms power at tagged frequency for topography: one for center one for surround. 
 
-? topography 
+
 ? baseline
 ? saving
 

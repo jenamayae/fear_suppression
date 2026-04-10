@@ -3,7 +3,7 @@ from __future__ import annotations
 # Display configuration
 monitor_name = "asus_oled"
 monitor_pixels = [1920, 1080]
-default_refresh_hz = 120
+fallback_refresh_hz = 120.0
 monitor_width_cm = 35
 viewing_distance_cm = 55
 fullscreen = True
@@ -11,33 +11,30 @@ fullscreen = True
 bg_color = (0, 0, 0)
 units = "deg"
 
+
 # Stimulus flicker frequency
-center_flicker_hz = 3
-surround_flicker_hz = 3.75
+center_flicker_hz = 6
+surround_flicker_hz = 7.5
 
-# Flicker type (on_off_flicker or phase_reversal)
-modulation_mode = "phase_reversal" # str converted to enum in stimuli.py
-upper_lower_phase_mode = "offset" # str converted to enum in stimuli.py
-
-# Stimulus location
-ecc = 5.0 # polar coordinates converted to cartesion coordinates in stimuli.py
+# Stimulus location & size
+ecc = 5.0 # polar coordinates converted to cartesion in stimuli.py
 upper_deg = 20.0
 lower_deg = 45.0
-
-# Center geometry
 center_radius = 0.75
-center_sf = 1.0
-center_mask = "raisedCos"
-center_mask_params = {"fringeWidth": 0.1}
-center_oris = [45]
-
-# Surround geometry
 center_surround_gap = 0.5
 surround_radius = center_radius + center_surround_gap + 1.5
-surround_sf = 1.0
-surround_mask = "raisedCos"
-surround_mask_params = {"fringeWidth": 0.1}
+
+
+# Center geometry
+center_oris = [45]
+center_sf = 1.0
+center_mask, center_mask_params = "raisedCos", {"fringeWidth": 0.1}
+
+# Surround geometry
 surround_oris = [None, 45, 315]
+surround_sf = 1.0
+surround_mask, surround_mask_params = "raisedCos", {"fringeWidth": 0.1}
+
 
 surround_hole_radius = (center_radius + center_surround_gap) * 2
 surround_hole_mask = "raisedCos"
@@ -48,9 +45,8 @@ center_contrast = 0.75
 surround_contrast = 1.0
 
 # Experiment timing
-trial_duration = 8
+trial_duration = 10
 iti_duration = 2
-fallback_refresh_hz = 120.0
 trials_per_condition = 5
 
 # Hardware

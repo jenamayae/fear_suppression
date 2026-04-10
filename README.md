@@ -13,7 +13,6 @@ Conditions:
 * 1 * 2 * 2 * 2 = 12 conditions
 
 Trials:
-* beginning fixation: 3.0 s (remove this)
 * trial duration: 10.0 s
 * inter trial interval: 3 s
 * trials per condition: 10

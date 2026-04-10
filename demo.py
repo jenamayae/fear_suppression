@@ -16,6 +16,7 @@ from stimuli import (
     center_oris,
     surround_oris,
     ModulationMode,
+    UpperLowerPhaseMode,
 )
 
 
@@ -31,8 +32,10 @@ modulation_modes = [
     ModulationMode.phase_reversal,
     ModulationMode.on_off_flicker,
 ]
-
-# one full cycle = ( refresh_hz / flicker_hz ) * 2
+upper_lower_phase_modes = [
+    UpperLowerPhaseMode.synchronized,
+    UpperLowerPhaseMode.offset,
+]
 
 def cycle_value(values, current, step=1):
     i = values.index(current)
@@ -57,11 +60,12 @@ def make_overlay_text(state, refresh_hz, measured_refresh_hz):
         f"frame={state['frame_num']}   t={t_sec:.4f}s   "
         f"play={'ON' if state['playing'] else 'OFF'}\n"
         f"mode={state['modulation_mode'].value}   "
+        f"phase_mode={state['upper_lower_phase_mode'].value}   "
         f"refresh_hz={refresh_hz:.3f}   measured_hz={measured_refresh_hz:.3f}\n"
         f"center_hz={center_flicker_hz:.2f}   surround_hz={surround_flicker_hz:.2f}\n"
         f"center_ori={state['center_ori']}   surround_ori={surround_label}\n"
         "RIGHT +1 frame | LEFT -1 frame | UP +10 | DOWN -10 | SPACE play/pause | "
-        "C next center | S next surround | X toggle surround | T mode | R reset | H overlay | ESC quit"
+        "C next center | S next surround | X toggle surround | T mode | P phase | R reset | H overlay | ESC quit"
     )
 
 
@@ -87,6 +91,7 @@ def main():
         "center_ori": center_oris[0],
         "surround_ori": surround_cycle[0] if surround_cycle else None,
         "modulation_mode": modulation_modes[0],
+        "upper_lower_phase_mode": upper_lower_phase_modes[0],
     }
 
     overlay = visual.TextStim(
@@ -105,7 +110,7 @@ def main():
 
     while True:
         keys = event.getKeys(
-            keyList=["escape", "space", "right", "left", "up", "down", "c", "s", "x", "t", "r", "h"]
+            keyList=["escape", "space", "right", "left", "up", "down", "c", "s", "x", "t", "p", "r", "h"]
         )
 
         if "escape" in keys:
@@ -128,6 +133,11 @@ def main():
             state["surround_ori"] = None if state["surround_ori"] is not None else surround_cycle[0]
         if "t" in keys:
             state["modulation_mode"] = cycle_value(modulation_modes, state["modulation_mode"])
+        if "p" in keys:
+            state["upper_lower_phase_mode"] = cycle_value(
+                upper_lower_phase_modes,
+                state["upper_lower_phase_mode"],
+            )
         if "r" in keys:
             state["frame_num"] = 0
         if "h" in keys:
@@ -147,6 +157,7 @@ def main():
             center_flicker_hz=center_flicker_hz,
             surround_flicker_hz=surround_flicker_hz,
             modulation_mode=state["modulation_mode"],
+            upper_lower_phase_mode=state["upper_lower_phase_mode"],
         )
 
         if state["show_overlay"]:

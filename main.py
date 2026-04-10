@@ -6,7 +6,6 @@ from psychopy import core, data, event, gui, visual
 from config import (
     monitor_name,
     monitor_pixels,
-    default_refresh_hz,
     monitor_width_cm,
     viewing_distance_cm,
     fullscreen,
@@ -31,7 +30,6 @@ from config import (
     center_sf,
     surround_sf,
 )
-
 from stimuli import (
     make_window,
     make_stimuli,
@@ -39,8 +37,7 @@ from stimuli import (
     ModulationMode,
     UpperLowerPhaseMode,
 )
-from trials import generate_calibration_trials
-
+from trials import generate_trials
 from hardware import (
     LabjackFio8BitTrigger,
     SimulatedLabjackFio8BitTrigger,
@@ -63,7 +60,6 @@ def get_refresh_hz(win, fallback_hz=fallback_refresh_hz):
     )
     return fallback_hz if hz is None else hz
 
-
 def make_run_paths(sub_id, ses_id, run_id):
     run_root = Path("data") / f"sub-{sub_id}" / f"ses-{ses_id}"
     rawdata_dir = run_root / "rawdata"
@@ -78,7 +74,6 @@ def make_run_paths(sub_id, ses_id, run_id):
         "session_info_path": metadata_dir / f"session_info_run-{run_id}.yaml",
         "trial_conditions_path": metadata_dir / f"trial_conditions_run-{run_id}",
     }
-
 
 def get_next_run_id(sub_id, ses_id):
     metadata_dir = Path("data") / f"sub-{sub_id}" / f"ses-{ses_id}" / "metadata"
@@ -98,6 +93,40 @@ def get_next_run_id(sub_id, ses_id):
 
     return f"{max(run_ids) + 1:03d}"
 
+def collect_exp_info():
+    participant_info: dict[str, object] = {
+        "subject": "",
+        "session": "001",
+    }
+
+    if not gui.DlgFromDict(
+        participant_info,
+        title="Surround Suppression Stimuli",
+        sortKeys=False,
+    ).OK:
+        return None
+
+    sub_id = str(participant_info["subject"])
+    ses_id = str(participant_info["session"])
+
+    exp_info: dict[str, object] = {
+        "subject": sub_id,
+        "session": ses_id,
+        "run": get_next_run_id(sub_id, ses_id),
+    }
+
+    if not gui.DlgFromDict(
+        exp_info,
+        title="Surround Suppression Stimuli",
+        sortKeys=False,
+    ).OK:
+        return None
+
+    return {
+        "subject": str(exp_info["subject"]),
+        "session": str(exp_info["session"]),
+        "run": str(exp_info["run"]),
+    }
 
 def write_session_info_yaml(path, session_info):
     lines = []
@@ -115,39 +144,17 @@ def write_session_info_yaml(path, session_info):
 
     path.write_text("\n".join(lines) + "\n")
 
-
 def main():
-    participant_info: dict[str, object] = {"subject": "", "session": "001"}
     stage_name = "calibration"
     datetime_start = datetime.now().isoformat(timespec="seconds")
 
-    if not gui.DlgFromDict(
-        participant_info,
-        title="Fear Surround Suppression",
-        sortKeys=False,
-    ).OK:
+    exp_info = collect_exp_info()
+    if exp_info is None:
         core.quit()
 
-    sub_id = str(participant_info["subject"])
-    ses_id = str(participant_info["session"])
-    next_run_id = get_next_run_id(sub_id, ses_id)
-
-    exp_info: dict[str, object] = {
-        "subject": sub_id,
-        "session": ses_id,
-        "run": next_run_id,
-    }
-
-    if not gui.DlgFromDict(
-        exp_info,
-        title="Fear Surround Suppression",
-        sortKeys=False,
-    ).OK:
-        core.quit()
-
-    sub_id = str(exp_info["subject"])
-    ses_id = str(exp_info["session"])
-    run_id = str(exp_info["run"])
+    sub_id = exp_info["subject"]
+    ses_id = exp_info["session"]
+    run_id = exp_info["run"]
     run_paths = make_run_paths(sub_id, ses_id, run_id)
 
     run_paths["rawdata_dir"].mkdir(parents=True, exist_ok=True)
@@ -155,13 +162,14 @@ def main():
     run_paths["derivatives_dir"].mkdir(parents=True, exist_ok=True)
 
     exp = data.ExperimentHandler(
-        name="fear_surround_suppression",
+        name="surround_suppression_stimuli",
         extraInfo=exp_info,
         dataFileName=str(run_paths["trial_conditions_path"]),
         saveWideText=True,
         savePickle=False,
     )
-    for name in ("thisRow.t", "notes"):
+
+    for name in ("thisRow.t", "notes"): # remove unused psychopy colums
         if name in exp.dataNames:
             exp.dataNames.remove(name)
 
@@ -176,7 +184,7 @@ def main():
     refresh_hz = get_refresh_hz(win)
     global_frame_num = 0
 
-    session_info = {
+    session_info = { # yaml encoding
         "participant": {
             "sub_id": sub_id,
             "ses_id": ses_id,
@@ -238,21 +246,15 @@ def main():
                 logging.warning("LabJack trigger unavailable; continuing without triggers: %s", exc)
                 print(f"WARNING: LabJack trigger unavailable; continuing without triggers: {exc}")
 
-        calibration_trials = generate_calibration_trials()
+        trials = generate_trials()
 
         show_message(win, "Press SPACE to begin calibration.\nPress ESC to quit.")
-        global_frame_num = run_iti(
-            win=win,
-            stims=stims,
-            iti_duration=iti_duration,
-            refresh_hz=refresh_hz,
-            global_frame_num=global_frame_num,
-        )
+
         global_frame_num = run_block(
             win=win,
             stims=stims,
             exp=exp,
-            trials=calibration_trials,
+            trials=trials,
             stage_name=stage_name,
             refresh_hz=refresh_hz,
             global_frame_num=global_frame_num,
