@@ -1,55 +1,49 @@
 from __future__ import annotations
 
-# Display configuration
+# display configuration
 monitor_name = "asus_oled"
 monitor_pixels = [1920, 1080]
 fallback_refresh_hz = 120.0
 monitor_width_cm = 35
 viewing_distance_cm = 55
 fullscreen = True
-
 bg_color = (0, 0, 0)
 units = "deg"
 
-
-# Stimulus flicker frequency
+# stimulation frequencies
 center_flicker_hz = 6
 surround_flicker_hz = 7.5
 
-# Stimulus location & size
-ecc = 5.0 # polar coordinates converted to cartesion in stimuli.py
+# location & size
+ecc = 5.0 # converted to cartesian in stimuli.py
 upper_deg = 20.0
 lower_deg = 45.0
 center_radius = 0.75
 center_surround_gap = 0.5
 surround_radius = center_radius + center_surround_gap + 1.5
 
-
-# Center geometry
+# center
 center_oris = [45]
 center_sf = 1.0
+center_contrast = 0.75
 center_mask, center_mask_params = "raisedCos", {"fringeWidth": 0.1}
 
-# Surround geometry
+# surround
 surround_oris = [None, 45, 315]
 surround_sf = 1.0
+surround_contrast = 1.0
 surround_mask, surround_mask_params = "raisedCos", {"fringeWidth": 0.1}
 
-
+# surround inner radius
 surround_hole_radius = (center_radius + center_surround_gap) * 2
-surround_hole_mask = "raisedCos"
-surround_hole_mask_params = {"fringeWidth": 0.15}
+surround_hole_mask, surround_hole_mask_params = "raisedCos", {"fringeWidth": 0.15}
 
-# Contrasts
-center_contrast = 0.75
-surround_contrast = 1.0
-
-# Experiment timing
+# trials
 trial_duration = 10
 iti_duration = 2
 trials_per_condition = 5
 
-# Hardware
+# labjack
 use_labjack = True
 require_triggers = True
 simulate_labjack = True
@@ -60,7 +54,7 @@ labjack_identifier = "ANY"
 labjack_fio_lines = [f"FIO{i}" for i in range(8)]
 labjack_fio_mask = 0xFF
 
-# Event codes
+# event codes
 stimulus_onset_code = 1
 stimulus_offset_code = 2
 frame_marker_code = 3

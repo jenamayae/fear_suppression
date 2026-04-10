@@ -126,7 +126,7 @@ def make_stimuli(win):
         )
         surround_holes[name] = GratingStim(
             win=win,
-            tex=None,
+            tex=None, # pyright: ignore 
             color=bg_color,
             mask=surround_hole_mask,
             maskParams=surround_hole_mask_params,
@@ -154,38 +154,53 @@ def set_trial_orientations(stims, center_ori, surround_ori):
 def cycle_position(frame_num, refresh_hz, flicker_hz):
     return (frame_num * flicker_hz / refresh_hz) % 1.0
 
-def phase_reversal_output(cyc):
-    quarter_cycle = int((cyc % 1.0) * 4.0)
-    phase = 0.0 if quarter_cycle in (0, 2) else 0.5
+def cycle_value(frame_num, refresh_hz, flicker_hz):
+    return frame_num * flicker_hz / refresh_hz
+
+def phase_reversal_output(cycle_index):
+    phase = 0.0 if cycle_index % 2 == 0 else 0.5
     gain = 1.0
     return phase, gain
 
 def on_off_output(cyc):
     phase = 0.0
-    gain = 1.0 if (cyc % 1.0) < 0.5 else 0.0
+    gain = 1.0 if cyc < 0.5 else 0.0
     return phase, gain
 
-def modulation_mode_dispatcher(cyc, modulation_mode):
+def modulation_mode_dispatcher(cyc, cycle_index, modulation_mode):
     if modulation_mode == ModulationMode.phase_reversal:
-        return phase_reversal_output(cyc)
+        return phase_reversal_output(cycle_index)
     if modulation_mode == ModulationMode.on_off_flicker:
         return on_off_output(cyc)
     raise ValueError(f"Unknown modulation mode: {modulation_mode}")
 
 def upper_lower_coordinator(frame_num, refresh_hz, flicker_hz, modulation_mode, upper_lower_phase_mode):
-    upper_cyc = cycle_position(frame_num, refresh_hz, flicker_hz)
+    upper_cycle_value = cycle_value(frame_num, refresh_hz, flicker_hz)
+    upper_cyc = upper_cycle_value % 1.0
+    upper_cycle_index = int(upper_cycle_value)
 
     if upper_lower_phase_mode == UpperLowerPhaseMode.synchronized:
-        lower_cyc = upper_cyc
+        lower_cycle_value = upper_cycle_value
     elif upper_lower_phase_mode == UpperLowerPhaseMode.offset:
         offset_deg = offset_deg_by_mode[modulation_mode]
         offset_cyc = (offset_deg % 360.0) / 360.0
-        lower_cyc = (upper_cyc + offset_cyc) % 1.0
+        lower_cycle_value = upper_cycle_value + offset_cyc
     else:
         raise ValueError(f"Unknown upper/lower phase mode: {upper_lower_phase_mode}")
 
-    upper_phase, upper_gain = modulation_mode_dispatcher(upper_cyc, modulation_mode)
-    lower_phase, lower_gain = modulation_mode_dispatcher(lower_cyc, modulation_mode)
+    lower_cyc = lower_cycle_value % 1.0
+    lower_cycle_index = int(lower_cycle_value)
+
+    upper_phase, upper_gain = modulation_mode_dispatcher(
+        upper_cyc,
+        upper_cycle_index,
+        modulation_mode,
+    )
+    lower_phase, lower_gain = modulation_mode_dispatcher(
+        lower_cyc,
+        lower_cycle_index,
+        modulation_mode,
+    )
 
     return upper_phase, lower_phase, upper_gain, lower_gain
 

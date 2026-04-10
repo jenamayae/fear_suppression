@@ -40,3 +40,23 @@ consider also:
 - effect of upper/lower counterphase at different contrasts (one temporal frequ, center only)
 - once we find maximal effect decide if center or surround is higher temporal frequ. 
 
+
+phase reversal, synchronized:
+center rms, surround = None
+center rms, surround = 45-dynamic
+center rms, surround = 45-static
+
+on/off flicker, synchronized:
+center rms, surround = None
+center rms, surround = 45-dynamic
+center rms, surround = 45-static
+
+phase reversal, offset:
+center rms, surround = None
+center rms, surround = 45-dynamic
+center rms, surround = 45-static
+
+on/off flicker, offset:
+center rms, surround = None
+center rms, surround = 45-dynamic
+center rms, surround = 45-static

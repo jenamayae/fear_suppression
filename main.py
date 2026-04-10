@@ -48,7 +48,7 @@ from hardware import (
 )
 
 # ----------------------------
-# main experiment configuration
+# main experiment 
 # ----------------------------
 
 def get_refresh_hz(win, fallback_hz=fallback_refresh_hz):
@@ -152,9 +152,9 @@ def main():
     if exp_info is None:
         core.quit()
 
-    sub_id = exp_info["subject"]
-    ses_id = exp_info["session"]
-    run_id = exp_info["run"]
+    sub_id = exp_info["subject"] # pyright: ignore 
+    ses_id = exp_info["session"] # pyright: ignore 
+    run_id = exp_info["run"] # pyright: ignore 
     run_paths = make_run_paths(sub_id, ses_id, run_id)
 
     run_paths["rawdata_dir"].mkdir(parents=True, exist_ok=True)
