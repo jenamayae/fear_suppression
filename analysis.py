@@ -221,8 +221,8 @@ def plot_center_tag_rms_by_condition(
         ("on_off_flicker", "synchronized"),
         ("on_off_flicker", "offset"),
     ]
-    surround_order = ["None", "45", "315"]
-    surround_labels = ["None", "45", "315"]
+    surround_order = ["None", "45", "45_static"]
+    surround_labels = ["None", "45_dynamic", "45_static"]
 
     if ax_by_panel is None:
         fig, ax_by_panel = plt.subplots(2, 2, figsize=(10, 8), sharey=True)

@@ -4,8 +4,8 @@ from __future__ import annotations
 monitor_name = "asus_oled"
 monitor_pixels = [1920, 1080]
 fallback_refresh_hz = 120.0
-monitor_width_cm = 35
-viewing_distance_cm = 55
+monitor_width_cm = 60
+viewing_distance_cm = 20
 fullscreen = True
 bg_color = (0, 0, 0)
 units = "deg"
@@ -28,8 +28,11 @@ center_sf = 1.0
 center_contrast = 0.75
 center_mask, center_mask_params = "raisedCos", {"fringeWidth": 0.1}
 
-# surround
-surround_oris = [None, 45, 315]
+# surround conditions
+# None: no surround
+# 45: surround shown with the trial's temporal modulation
+# "45_static": surround shown at 45 deg with constant phase/contrast
+surround_oris = [None, 45, "45_static"]
 surround_sf = 1.0
 surround_contrast = 1.0
 surround_mask, surround_mask_params = "raisedCos", {"fringeWidth": 0.1}
