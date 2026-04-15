@@ -1,8 +1,0 @@
-model = "gpt-5.3-codex"
-model_reasoning_effort = "medium"
-
-[windows]
-sandbox = "read-only"
-ask-for-approval="on-request"
-
-personality = "pragmatic"
