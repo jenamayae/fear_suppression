@@ -1,7 +1,7 @@
 import math
-from enum import Enum
 from psychopy import visual, monitors
 from psychopy.visual.grating import GratingStim
+from enums import ModulationMode, SurroundCondition, UpperLowerPhaseMode
 from config import (
     bg_color,
     units,
@@ -15,14 +15,14 @@ from config import (
     center_sf,
     center_mask,
     center_mask_params,
-    center_oris,
+    center_orientations,
     center_contrast,
     center_surround_gap,
     surround_radius,
     surround_sf,
     surround_mask,
     surround_mask_params,
-    surround_oris,
+    surround_orientations,
     surround_contrast,
     surround_hole_radius,
     surround_hole_mask,
@@ -30,43 +30,38 @@ from config import (
 )
 
 # ----------------------------
-# stimulus configuration
-# ----------------------------
-
-class ModulationMode(Enum):
-    phase_reversal = "phase_reversal" # 
-    on_off_flicker = "on_off_flicker" # contrast gating on/off
-
-class UpperLowerPhaseMode(Enum):
-    synchronized = "synchronized"
-    offset = "offset"
-
 offset_deg_by_mode = {
     ModulationMode.phase_reversal: 90,
     ModulationMode.on_off_flicker: 180,
 }
 
 
-def parse_surround_condition(surround_ori):
-    if surround_ori is None:
+def get_surround_state(surround_orientation, surround_condition):
+    if surround_condition == SurroundCondition.absent:
         return {
             "visible": False,
             "ori": None,
             "is_static": False,
         }
 
-    if surround_ori == "45_static":
+    if surround_orientation is None:
+        raise ValueError("surround_orientation cannot be None when surround is visible")
+
+    if surround_condition == SurroundCondition.static:
         return {
             "visible": True,
-            "ori": 45,
+            "ori": surround_orientation,
             "is_static": True,
         }
 
-    return {
-        "visible": True,
-        "ori": surround_ori,
-        "is_static": False,
-    }
+    if surround_condition == SurroundCondition.dynamic:
+        return {
+            "visible": True,
+            "ori": surround_orientation,
+            "is_static": False,
+        }
+
+    raise ValueError(f"Unknown surround condition: {surround_condition}")
 
 def polar_to_cartesian(radius, angle_deg):
     angle_rad = math.radians(angle_deg)
@@ -165,15 +160,15 @@ def make_stimuli(win):
         "surround_holes": surround_holes,
     }
 
-def set_trial_orientations(stims, center_ori, surround_ori):
-    surround_condition = parse_surround_condition(surround_ori)
+def set_trial_orientations(stims, center_orientation, surround_orientation, surround_condition):
+    surround_state = get_surround_state(surround_orientation, surround_condition)
 
     for center in stims["centers"].values():
-        center.ori = center_ori
+        center.ori = center_orientation
 
-    if surround_condition["visible"]:
+    if surround_state["visible"]:
         for surround in stims["surrounds"].values():
-            surround.ori = surround_condition["ori"]
+            surround.ori = surround_state["ori"]
 
 def cycle_position(frame_num, refresh_hz, flicker_hz):
     return (frame_num * flicker_hz / refresh_hz) % 1.0
@@ -182,12 +177,12 @@ def cycle_value(frame_num, refresh_hz, flicker_hz):
     return frame_num * flicker_hz / refresh_hz
 
 def phase_reversal_output(cycle_index):
-    phase = 0.0 if cycle_index % 2 == 0 else 0.5
+    phase = 0.25 if cycle_index % 2 == 0 else 0.75
     gain = 1.0
     return phase, gain
 
 def on_off_output(cyc):
-    phase = 0.0
+    phase = 0.25
     gain = 1.0 if cyc < 0.5 else 0.0
     return phase, gain
 
@@ -232,8 +227,9 @@ def draw_flicker_frame(
     stims,
     frame_num,
     refresh_hz,
-    center_ori,
-    surround_ori,
+    center_orientation,
+    surround_orientation,
+    surround_condition,
     modulation_mode,
     upper_lower_phase_mode,
     center_contrast=center_contrast,
@@ -241,8 +237,8 @@ def draw_flicker_frame(
     center_flicker_hz=center_flicker_hz,
     surround_flicker_hz=surround_flicker_hz,
 ):
-    set_trial_orientations(stims, center_ori, surround_ori)
-    surround_condition = parse_surround_condition(surround_ori)
+    set_trial_orientations(stims, center_orientation, surround_orientation, surround_condition)
+    surround_state = get_surround_state(surround_orientation, surround_condition)
 
     center_upper_phase, center_lower_phase, center_upper_gain, center_lower_gain = upper_lower_coordinator(
         frame_num=frame_num,
@@ -259,7 +255,7 @@ def draw_flicker_frame(
         upper_lower_phase_mode=upper_lower_phase_mode,
     )
 
-    if surround_condition["is_static"]:
+    if surround_state["is_static"]:
         surround_upper_phase = 0.0
         surround_lower_phase = 0.0
         surround_upper_gain = 1.0
@@ -285,7 +281,7 @@ def draw_flicker_frame(
     stims["surrounds"]["right_upper"].contrast = surround_contrast * surround_upper_gain
     stims["surrounds"]["right_lower"].contrast = surround_contrast * surround_lower_gain
 
-    if surround_condition["visible"]:
+    if surround_state["visible"]:
         for name in stims["surrounds"]:
             stims["surrounds"][name].draw()
             if "surround_holes" in stims:

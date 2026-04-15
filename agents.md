@@ -1,12 +1,6 @@
-# Fear suppression experiment
-
-## Experiment Development Stages:
-1. Preconditioning Calibration 
-2. Conditioning Calibration 
-2. Full Experiment
 
 ## Scope
-Local rules for the fear suppression PsychoPy experiment, LabJack trigger code, trial generation, data logging, and EEG analysis helpers.
+Local rules for the suppression_stimuli PsychoPy experiment.
 
 ## Data organization
 ```
@@ -25,9 +19,7 @@ data/
 ## Experiment rules
 - keep condition variables in tables, metadata, or logged trial fields, not ad hoc filenames
 - preserve frame-based timing logic unless there is a clear reason to change it and the change is approved
-- do not modify existing data files unless explicitly asked
-may depend on them
-- do not modify existing data files 
+- do not modify existing data files
 
 ## Validation
 - suggest basic validation checks but do not implement without approval

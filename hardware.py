@@ -26,6 +26,8 @@ from config import (
     labjack_fio_lines,
     labjack_fio_mask,
     labjack_identifier,
+    on_off_flicker_code,
+    phase_reversal_code,
     stimulus_offset_code,
     stimulus_onset_code,
     trigger_min_gap_s,
@@ -257,16 +259,20 @@ def log_trigger_settings(
     offset_code=stimulus_offset_code,
     frame_code=frame_marker_code,
     frame_interval=frame_marker_interval,
+    on_off_code=on_off_flicker_code,
+    phase_reversal_mode_code=phase_reversal_code,
 ):
     logging.info(
         "Trigger settings: pulse_width_s=%s min_gap_s=%s onset_code=%s offset_code=%s "
-        "frame_code=%s frame_interval=%s",
+        "frame_code=%s frame_interval=%s on_off_code=%s phase_reversal_code=%s",
         pulse_width_s,
         min_gap_s,
         onset_code,
         offset_code,
         frame_code,
         frame_interval,
+        on_off_code,
+        phase_reversal_mode_code,
     )
 
 
@@ -276,6 +282,34 @@ def send_stimulus_onset(trigger: LabjackFio8BitTrigger, code: int = stimulus_ons
 
 def send_stimulus_offset(trigger: LabjackFio8BitTrigger, code: int = stimulus_offset_code):
     trigger.pulse_event_async(code)
+
+
+def condition_code_for_mode(modulation_mode) -> int:
+    mode_value = getattr(modulation_mode, "value", modulation_mode)
+    mode_str = str(mode_value).strip().lower()
+
+    if mode_str == "on_off_flicker":
+        return on_off_flicker_code
+    if mode_str == "phase_reversal":
+        return phase_reversal_code
+
+    raise ValueError(f"Unknown modulation mode for trigger mapping: {modulation_mode}")
+
+
+def send_condition_onset(trigger: LabjackFio8BitTrigger, modulation_mode):
+    code = condition_code_for_mode(modulation_mode)
+    trigger.pulse_event_async(code)
+
+
+def send_trial_start_codes(
+    trigger: LabjackFio8BitTrigger,
+    modulation_mode,
+    include_generic_onset: bool = False,
+):
+    """Send trial-start marker; condition code is the onset code."""
+    if include_generic_onset:
+        trigger.pulse_event(stimulus_onset_code)
+    trigger.pulse_event(condition_code_for_mode(modulation_mode))
 
 
 def maybe_send_frame_marker(

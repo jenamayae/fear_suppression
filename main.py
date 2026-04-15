@@ -30,12 +30,11 @@ from config import (
     center_sf,
     surround_sf,
 )
+from enums import ModulationMode, SurroundCondition, UpperLowerPhaseMode
 from stimuli import (
     make_window,
     make_stimuli,
     draw_flicker_frame,
-    ModulationMode,
-    UpperLowerPhaseMode,
 )
 from trials import generate_trials
 from hardware import (
@@ -304,8 +303,9 @@ def run_trial(win, stims, trial, trial_duration, refresh_hz, global_frame_num, t
             stims=stims,
             frame_num=global_frame_num,
             refresh_hz=refresh_hz,
-            center_ori=trial["center_ori"],
-            surround_ori=trial["surround_ori"],
+            center_orientation=trial["center_orientation"],
+            surround_orientation=trial["surround_orientation"],
+            surround_condition=trial["surround_condition"],
             center_contrast=trial["center_contrast"],
             surround_contrast=trial["surround_contrast"],
             center_flicker_hz=center_flicker_hz,
@@ -347,15 +347,28 @@ def run_iti(win, stims, iti_duration, refresh_hz, global_frame_num):
 
 
 def log_trial(exp, trial_num, trial, trial_start_frame, trial_end_frame, refresh_hz):
+    surround_condition = trial["surround_condition"]
+    surround_flicker_hz_log = surround_flicker_hz
+    surround_orientation_log = trial["surround_orientation"]
+    surround_contrast_log = trial["surround_contrast"]
+
+    if surround_condition in (SurroundCondition.absent, SurroundCondition.static):
+        surround_flicker_hz_log = "N/A"
+
+    if surround_condition == SurroundCondition.absent:
+        surround_orientation_log = "N/A"
+        surround_contrast_log = "N/A"
+
     exp.addData("trial_num", trial_num)
     exp.addData("upper_lower_phase_mode", trial["upper_lower_phase_mode"])
     exp.addData("modulation_mode", trial["modulation_mode"])
     exp.addData("center_flicker_hz", center_flicker_hz)
-    exp.addData("surround_flicker_hz", surround_flicker_hz)
-    exp.addData("center_ori", trial["center_ori"])
-    exp.addData("surround_ori", trial["surround_ori"])
+    exp.addData("surround_flicker_hz", surround_flicker_hz_log)
+    exp.addData("center_orientation", trial["center_orientation"])
+    exp.addData("surround_condition", surround_condition.value)
+    exp.addData("surround_orientation", surround_orientation_log)
     exp.addData("center_contrast", trial["center_contrast"])
-    exp.addData("surround_contrast", trial["surround_contrast"])
+    exp.addData("surround_contrast", surround_contrast_log)
     exp.addData("refresh_hz", refresh_hz)
     exp.addData("trial_start_frame", trial_start_frame)
     exp.addData("trial_end_frame", trial_end_frame)

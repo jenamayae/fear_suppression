@@ -3,20 +3,20 @@ from psychopy import core, event, visual
 from config import (
     monitor_name,
     monitor_width_cm,
+    monitor_pixels,
     viewing_distance_cm,
     center_flicker_hz,
     surround_flicker_hz,
     center_contrast,
     surround_contrast,
 )
+from enums import ModulationMode, SurroundCondition, UpperLowerPhaseMode
 from stimuli import (
     make_window,
     make_stimuli,
     draw_flicker_frame,
-    center_oris,
-    surround_oris,
-    ModulationMode,
-    UpperLowerPhaseMode,
+    center_orientations,
+    surround_orientations,
     cycle_position,
     offset_deg_by_mode,
 )
@@ -83,7 +83,7 @@ def get_cycle_positions(state, refresh_hz):
 
 def make_overlay_text(state, refresh_hz):
     t_sec = state["frame_num"] / refresh_hz
-    surround_label = "None" if state["surround_ori"] is None else str(state["surround_ori"])
+    surround_label = "None" if state["surround_orientation"] is None else str(state["surround_orientation"])
     cycle_positions = get_cycle_positions(state, refresh_hz)
 
     return (
@@ -92,7 +92,9 @@ def make_overlay_text(state, refresh_hz):
         f"mode={state['modulation_mode'].value}   "
         f"phase_mode={state['upper_lower_phase_mode'].value}   "
         f"center_hz={center_flicker_hz:.2f}   surround_hz={surround_flicker_hz:.2f}\n"
-        f"center_ori={state['center_ori']}   surround_ori={surround_label}\n"
+        f"center_orientation={state['center_orientation']}   "
+        f"surround_condition={state['surround_condition'].value}   "
+        f"surround_orientation={surround_label}\n"
         f"center_upper_cyc={cycle_positions['center_upper_cyc']:.3f}   "
         f"center_lower_cyc={cycle_positions['center_lower_cyc']:.3f}\n"
         f"surround_upper_cyc={cycle_positions['surround_upper_cyc']:.3f}   "
@@ -114,14 +116,15 @@ def main():
 
     refresh_hz = get_refresh_hz(win)
 
-    surround_cycle = list(surround_oris)
+    surround_cycle = list(surround_orientations)
 
     state = {
         "frame_num": 0,
         "playing": False,   # starts paused for true frame-by-frame demo
         "show_overlay": True,
-        "center_ori": center_oris[0],
-        "surround_ori": surround_cycle[0] if surround_cycle else None,
+        "center_orientation": center_orientations[0],
+        "surround_orientation": surround_cycle[0] if surround_cycle else None,
+        "surround_condition": SurroundCondition.dynamic,
         "modulation_mode": modulation_modes[0],
         "upper_lower_phase_mode": upper_lower_phase_modes[0],
     }
@@ -158,9 +161,14 @@ def main():
         if "down" in keys:
             state["frame_num"] = max(0, state["frame_num"] - 10)
         if "s" in keys and surround_cycle:
-            state["surround_ori"] = cycle_value(surround_cycle, state["surround_ori"], 1)
+            state["surround_orientation"] = cycle_value(surround_cycle, state["surround_orientation"], 1)
         if "x" in keys:
-            state["surround_ori"] = None if state["surround_ori"] is not None else surround_cycle[0]
+            if state["surround_condition"] == SurroundCondition.absent:
+                state["surround_condition"] = SurroundCondition.dynamic
+                state["surround_orientation"] = surround_cycle[0] if surround_cycle else None
+            else:
+                state["surround_condition"] = SurroundCondition.absent
+                state["surround_orientation"] = None
         if "m" in keys:
             state["modulation_mode"] = cycle_value(modulation_modes, state["modulation_mode"])
         if "u" in keys:
@@ -178,8 +186,9 @@ def main():
             stims=stims,
             frame_num=state["frame_num"],
             refresh_hz=refresh_hz,
-            center_ori=state["center_ori"],
-            surround_ori=state["surround_ori"],
+            center_orientation=state["center_orientation"],
+            surround_orientation=state["surround_orientation"],
+            surround_condition=state["surround_condition"],
             center_contrast=center_contrast,
             surround_contrast=surround_contrast,
             center_flicker_hz=center_flicker_hz,
